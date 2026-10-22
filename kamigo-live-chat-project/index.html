@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Kamigo — Local help, made simple | Electrician, Plumbing, Cleaning in Mangalagiri</title>
+<meta name="description" content="Book trusted local help in Mangalagiri, Vijayawada and nearby: electrician, plumbing, appliance repair, home cleaning, household help and more. Simple booking, quick follow-up." />
+<meta name="theme-color" content="#1d7c68" />
+<link rel="canonical" href="https://kamigo-bb729.web.app/" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Kamigo" />
+<meta property="og:title" content="Kamigo — Local help, made simple" />
+<meta property="og:description" content="Electrician, plumbing, appliance repair, cleaning and more. Book in a minute and our team follows up fast." />
+<meta property="og:url" content="https://kamigo-bb729.web.app/" />
+<meta property="og:image" content="https://kamigo-bb729.web.app/icons/icon-512.png" />
+<meta name="twitter:card" content="summary" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Kamigo","description":"Local home services: electrician, plumbing, appliance repair, cleaning, household help.","url":"https://kamigo-bb729.web.app/","image":"https://kamigo-bb729.web.app/icons/icon-512.png","areaServed":["Mangalagiri","Vijayawada","Guntur","Hyderabad","Bengaluru"],"address":{"@type":"PostalAddress","addressLocality":"Mangalagiri","addressRegion":"Andhra Pradesh","addressCountry":"IN"}}</script>
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app" id="top">
+  <div class="wrap">
+    <header class="nav">
+      <a href="#top" class="brand" style="text-decoration:none;color:inherit"><span class="brandmark">k</span>kamigo<span style="color:var(--green)">.</span></a>
+      <nav class="navlinks" aria-label="Main navigation"><a href="#services">Services</a><a href="#how">How it works</a><a href="#about">About Kamigo</a></nav>
+      <div class="navright" id="navRight"><select class="city" id="langSelect" aria-label="Language"><option value="en">English</option><option value="te">తెలుగు</option><option value="hi">हिन्दी</option></select><button class="btn secondary" id="googleSignIn" type="button">Sign in with Google</button><select class="city" id="citySelect" aria-label="Choose your city"><option value="Mangalagiri">📍 Mangalagiri</option><option value="Vijayawada">📍 Vijayawada</option><option value="Bengaluru">📍 Bengaluru</option><option value="Hyderabad">📍 Hyderabad</option></select><button class="btn" id="bookTop">Book a service</button></div>
+      <button class="btn mobile-book" id="bookMobile" type="button">Book</button><button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navRight">☰</button>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow"><span class="dot"></span> YOUR NEIGHBOURHOOD, SORTED</div>
+          <h1>Local help.<br><em>Zero hassle.</em></h1>
+          <p class="lead">From fixing a leaky tap to finding a helping hand at home — get everyday things done with Kamigo.</p>
+          <form class="searchbar" id="searchForm"><span class="searchicon">⌕</span><input id="searchInput" aria-label="Search services" placeholder="What do you need help with?" autocomplete="off"/><button class="btn" type="submit">Find help ↗</button></form>
+          <div class="trust"><span><b>✓</b> Simple booking</span><span><b>✓</b> Local services</span><span><b>✓</b> One helpful place</span></div>
+        </div>
+        <div class="heroart" aria-label="Illustration of home services">
+          <div class="artgrid"></div><div class="artblob"></div>
+          <div class="arttop"><span>KAMIGO CARE</span><span class="availability">● Here to help</span></div>
+          <div class="bigemoji" aria-hidden="true">🧰</div>
+          <div class="floating float1"><span class="floaticon">🔧</span><span><strong>Home repairs</strong><small>Small fix, big relief</small></span></div>
+          <div class="floating float2"><span class="floaticon">🏡</span><span><strong>Help at home</strong><small>Your day, made easier</small></span></div>
+          <div class="rating">Made for everyday life&nbsp; <strong>✳</strong></div>
+        </div>
+      </section>
+      <section class="section" id="services">
+        <div class="sectionhead"><div><div class="kicker">A LITTLE HELP GOES A LONG WAY</div><h2>What can we help with?</h2><p class="sub">Choose what you need. We'll make the next step simple.</p></div><a class="textlink" href="#services" id="allServices">Explore services ↗</a></div>
+        <div class="services" id="serviceGrid">
+          <button class="service" data-service="Electrician"><span class="serviceicon">💡</span><strong>Electrician</strong><small>Switches, lights &amp; wiring</small><span class="arrow">Find an electrician ↗</span></button>
+          <button class="service" data-service="Plumbing"><span class="serviceicon">🚿</span><strong>Plumbing</strong><small>Taps, leaks &amp; pipe fixes</small><span class="arrow">Fix it today ↗</span></button>
+          <button class="service" data-service="Appliance repair"><span class="serviceicon">🧺</span><strong>Appliance repair</strong><small>Everyday appliances, sorted</small><span class="arrow">Get it repaired ↗</span></button>
+          <button class="service" data-service="Household help"><span class="serviceicon">🧹</span><strong>Household help</strong><small>A hand with everyday tasks</small><span class="arrow">Find home help ↗</span></button>
+          <button class="service" data-service="Cleaning"><span class="serviceicon">🫧</span><strong>Home cleaning</strong><small>Fresh, tidy and comfortable</small><span class="arrow">Make it sparkle ↗</span></button>
+          <button class="service" data-service="Vegetable delivery"><span class="serviceicon">🥬</span><strong>Fresh vegetables</strong><small>Daily essentials made easier</small><span class="arrow">Explore delivery ↗</span></button>
+          <button class="service" data-service="Hospital appointment assistance"><span class="serviceicon">🩺</span><strong>Appointment help</strong><small>Help organising a hospital visit</small><span class="arrow">Get assistance ↗</span></button>
+          <button class="service" data-service="Other service"><span class="serviceicon">✨</span><strong>Something else?</strong><small>Tell us what you need</small><span class="arrow">Let's figure it out ↗</span></button>
+        </div>
+        <p class="empty" id="emptyState">No matching service yet. Try another search or tell us what you need.</p>
+      </section>
+  </div>
+  <section class="how" id="how"><div class="wrap"><div class="kicker">NO COMPLICATED STEPS</div><h2 style="font-size:34px;letter-spacing:-1.4px;margin:9px 0 0">Getting help should be easy.</h2><div class="steps"><div class="step"><div class="num">01</div><div><h3>Choose a service</h3><p>Pick the kind of help you need and tell us a little about the task.</p></div></div><div class="step"><div class="num">02</div><div><h3>Share your details</h3><p>Choose your city and preferred date so the request has the right context.</p></div></div><div class="step"><div class="num">03</div><div><h3>Take the next step</h3><p>Sign in with Google and send your request. You'll get a reference number right away, and our team will follow up.</p></div></div></div></div></section>
+  <div class="wrap" id="about"><section class="cta"><div><h2>One less thing on your mind.</h2><p>Kamigo is being built to make everyday local services feel effortless.</p></div><button class="btn" id="ctaBook">Find your help ↗</button></section>
+    <footer class="footer"><a href="#top" class="brand" style="text-decoration:none;color:inherit"><span class="brandmark">k</span>kamigo<span style="color:var(--green)">.</span></a><span>Local help, made simple.</span><span><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a> · © 2026 Kamigo</span></footer>
+  </div>
+</div>
+
+<button class="chat-launch" id="chatLaunch" type="button"><span id="chatLaunchLabel">💬 Chat with our team</span><span class="chat-badge" id="chatBadge" hidden>0</span></button>
+<section class="chat-panel" id="chatPanel" aria-label="Kamigo live support chat"><header class="chat-head"><div><strong>Kamigo Support</strong><small>Send us a message</small></div><button class="chat-close" id="chatClose" type="button" aria-label="Close chat">×</button></header><div class="chat-messages" id="chatMessages" aria-live="polite"><div class="chat-bubble team">Hi! Welcome to Kamigo. How can we help?</div></div><form class="chat-compose" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write your message…" required aria-label="Write your message"><button type="submit">Send</button></form><div class="chat-status" id="chatStatus">Connecting to support…</div></section>
+
+<div class="notice" id="notice" role="status" aria-live="polite"></div>
+<div class="modalback" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div class="modal order-modal">
+  <header class="order-head">
+    <div><div class="order-eyebrow">KAMIGO · LOCAL HELP</div><h2 id="modalTitle">Service Order Form</h2><p id="orderSub">Fill in the details below and our team will get back to you within minutes.</p></div>
+    <button class="close" id="closeModal" type="button" aria-label="Close">×</button>
+  </header>
+  <form id="bookingForm">
+    <div class="order-body">
+      <fieldset class="order-section"><legend><span class="step">1</span> Service details</legend>
+        <label class="field"><span>Select service <b class="req">*</b></span><select id="serviceSelect" required><option>Electrician</option><option>Plumbing</option><option>Appliance repair</option><option>Household help</option><option>Cleaning</option><option>Vegetable delivery</option><option>Hospital appointment assistance</option><option>Other service</option></select></label>
+      </fieldset>
+
+      <fieldset class="order-section"><legend><span class="step">2</span> Your details</legend>
+        <div class="grid-2">
+          <label class="field"><span>Your name <b class="req">*</b></span><input id="customerName" placeholder="Full name" required maxlength="70" autocomplete="name" /></label>
+          <label class="field"><span>Phone number <b class="req">*</b></span><input id="customerPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" maxlength="16" required autocomplete="tel" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="order-section"><legend><span class="step">3</span> Schedule</legend>
+        <div class="grid-2">
+          <label class="field"><span>Preferred date <b class="req">*</b></span><input id="bookingDate" type="date" required /></label>
+          <label class="field"><span>Preferred time</span><select id="bookingSlot"><option value="Morning">Morning (8 AM – 12 PM)</option><option value="Afternoon">Afternoon (12 – 4 PM)</option><option value="Evening">Evening (4 – 8 PM)</option></select></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="order-section"><legend><span class="step">4</span> Service location</legend>
+        <div class="grid-2">
+          <label class="field"><span>City</span><select id="bookingCity"><option>Mangalagiri</option><option>Vijayawada</option><option>Bengaluru</option><option>Hyderabad</option></select></label>
+          <label class="field"><span>PIN code <b class="req">*</b></span><input id="bookingPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN code" required /></label>
+        </div>
+        <small class="hint" id="pinHint"></small>
+        <label class="field"><span>Service address</span><select id="bookingAddressChoice"><option value="home">Home address (from profile)</option><option value="work">Work address (from profile)</option><option value="new">Enter a different address</option></select></label>
+        <label class="field"><textarea id="bookingAddress" maxlength="250" rows="2" placeholder="House no., street, landmark" aria-label="Full service address" required></textarea></label>
+      </fieldset>
+
+      <fieldset class="order-section"><legend><span class="step">5</span> Photos (optional)</legend>
+        <label class="field"><span>Show us the problem</span><input id="bookingPhotos" type="file" accept="image/*" multiple /></label>
+        <small class="hint" id="photoHint">Up to 3 photos. They are compressed automatically.</small><div class="photo-strip" id="photoStrip"></div>
+      </fieldset>
+
+      <fieldset class="order-section"><legend><span class="step">6</span> Offers</legend>
+        <label class="field"><span>Coupon code (optional)</span><div class="coupon-row"><input id="bookingCoupon" maxlength="20" placeholder="e.g. WELCOME10" autocapitalize="characters" /><button class="btn secondary" type="button" id="applyCoupon">Apply</button></div><small class="hint" id="couponHint"></small></label>
+      </fieldset>
+    </div>
+    <footer class="order-foot"><button class="btn" type="submit">Send service request ↗</button><small>🔒 Your details are shared only with the Kamigo team. <b class="req">*</b> required</small></footer>
+  </form>
+</div></div>
+<div class="modalback" id="profileBack" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="modal profile-modal">
+    <div class="modalhead"><h2 id="profileTitle">Your Kamigo account</h2><button class="close" id="closeProfile" type="button" aria-label="Close profile">×</button></div>
+    <p id="profileStatus">Sign in with Google to create your verified customer account, save your details, and view your service requests.</p>
+    <div id="profileSignedOut"><button class="btn" id="profileGoogleSignIn" type="button">Continue with Google</button></div>
+    <div id="profileSignedIn" hidden>
+      <div class="account-identity"><img id="profilePhoto" alt="" hidden><div><strong id="profileName"></strong><div id="profileEmail" class="profile-email"></div></div></div>
+      <form id="profileForm">
+        <label class="field"><span>Full name</span><input id="profileFullName" maxlength="70" required autocomplete="name"></label>
+        <label class="field"><span>Phone number</span><input id="profilePhone" type="tel" inputmode="tel" maxlength="16" placeholder="10-digit mobile number" required autocomplete="tel"></label>
+        <label class="field"><span>Age</span><input id="profileAge" type="number" min="18" max="120" inputmode="numeric" placeholder="Your age" required></label>
+        <label class="field"><span>Gender</span><select id="profileGender" required><option value="">Select gender</option><option value="Female">Female</option><option value="Male">Male</option><option value="Non-binary">Non-binary</option><option value="Prefer not to say">Prefer not to say</option></select></label>
+        <label class="field"><span>Preferred city</span><select id="profileCity"><option>Mangalagiri</option><option>Vijayawada</option><option>Bengaluru</option><option>Hyderabad</option></select></label>
+        <label class="field"><span>Home address (optional)</span><textarea id="profileAddress" maxlength="250" rows="2" placeholder="Area, street or landmark" autocomplete="street-address"></textarea></label>
+        <label class="field"><span>Work address (optional)</span><textarea id="profileWorkAddress" maxlength="250" rows="2" placeholder="Office / shop address"></textarea></label>
+        <label class="consent"><input type="checkbox" id="profileConsent" /><span>I am 18 or older. I agree to the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and <a href="terms.html" target="_blank" rel="noopener">Terms</a>, and consent to Kamigo storing my details to provide services. <b class="req">*</b></span></label>
+        <button class="btn" id="saveProfileButton" type="submit">Save account details</button>
+      </form>
+      <div class="booking-history"><h3>My service requests</h3><div id="myBookings"><p>Loading your requests…</p></div></div>
+      <button class="btn secondary" id="signOutButton" type="button">Sign out</button>
+      <div class="danger-zone"><button class="mini-btn danger" id="deleteAccountButton" type="button">Delete my account &amp; data</button><small>Permanently erases your profile, bookings, chats and reviews.</small></div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+
+
+
+
+
+
+
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/bookings.js"></script>
+<script src="js/catalogue.js"></script>
+<script src="js/monitor.js"></script>
+</body>
+</html>

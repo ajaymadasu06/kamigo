@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /provider.html
+Sitemap: https://kamigo-bb729.web.app/sitemap.xml

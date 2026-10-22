@@ -1,0 +1,21 @@
+rules_version = '2';
+// Booking photos: bookingPhotos/{customerUid}/{bookingId}/{file}
+// Cross-service rules read Firestore (admins / workers); Firebase CLI will ask you to grant the needed IAM role on first deploy.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isStaff() { return signedIn() && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid)); }
+    function isTechnician() {
+      return signedIn() && request.auth.token.email != null
+        && firestore.exists(/databases/(default)/documents/workers/$(request.auth.token.email.lower()));
+    }
+    match /bookingPhotos/{uid}/{bookingId}/{file} {
+      allow read: if signedIn() && (request.auth.uid == uid || isStaff() || isTechnician());
+      allow write: if signedIn() && request.auth.uid == uid
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow delete: if isStaff();
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

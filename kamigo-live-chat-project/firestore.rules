@@ -1,0 +1,266 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function googleCustomer() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && request.auth.token.email is string
+        && request.auth.token.email_verified == true;
+    }
+    function adminPath() { return /databases/$(database)/documents/admins/$(request.auth.uid); }
+    // Any staff member (role 'admin' or 'support'). Provision in Console: admins/{uid}  { role: 'admin' | 'support' }
+    function isAdmin() { return signedIn() && exists(adminPath()); }
+    // Full admins can manage bookings, catalogue, staff data. Missing role defaults to full admin (backwards compatible).
+    function isFullAdmin() { return isAdmin() && get(adminPath()).data.get('role', 'admin') == 'admin'; }
+
+    function workerPath() { return /databases/$(database)/documents/workers/$(request.auth.token.email.lower()); }
+    function isWorker() {
+      return googleCustomer() && exists(workerPath()) && get(workerPath()).data.active == true;
+    }
+    function ownsConversation(conversationId) {
+      return signedIn() && get(/databases/$(database)/documents/conversations/$(conversationId)).data.customerUid == request.auth.uid;
+    }
+    function validMessage() {
+      return request.resource.data.keys().hasOnly(['text','senderUid','senderRole','createdAt'])
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 1000
+        && request.resource.data.createdAt == request.time;
+    }
+    // Indian mobile: optional +91, then 10 digits starting 6-9.
+    function validIndianPhone(p) { return p is string && p.matches('^([+]91)?[6-9][0-9]{9}$'); }
+    // A timestamp field may only be set to "now" or be left unchanged (used for lastBookingAt, consentAt).
+    function stampOk(f) {
+      return !(f in request.resource.data)
+        || request.resource.data[f] == request.time
+        || (resource != null && resource.data.get(f, null) == request.resource.data[f]);
+    }
+
+    // ---------- admins ----------
+    match /admins/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;     // provision manually in Firebase Console
+    }
+
+    // ---------- technicians (doc ID = lowercase Google email) ----------
+    match /workers/{email} {
+      allow get: if (signedIn() && request.auth.token.email is string && request.auth.token.email.lower() == email) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isFullAdmin()
+        && request.resource.data.keys().hasOnly(['name','email','phone','active','createdAt','updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 70
+        && request.resource.data.email == email
+        && request.resource.data.active is bool
+        && (!('phone' in request.resource.data) || request.resource.data.phone.size() <= 16);
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- customers ----------
+    match /customers/{uid} {
+      allow read: if (googleCustomer() && request.auth.uid == uid) || isAdmin();
+      allow create, update: if googleCustomer() && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasOnly(['uid','name','email','photoURL','phone','age','gender','city','address','workAddress','lastSeenAt','lastBookingAt','consentAt','createdAt','updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 70
+        && request.resource.data.phone is string && (request.resource.data.phone.size() == 0 || validIndianPhone(request.resource.data.phone))
+        && request.resource.data.age is int && request.resource.data.age >= 18 && request.resource.data.age <= 120
+        && request.resource.data.gender in ['Male','Female','Non-binary','Prefer not to say']
+        && request.resource.data.city is string && request.resource.data.city.size() <= 60
+        && request.resource.data.address is string && request.resource.data.address.size() <= 250
+        && (!('workAddress' in request.resource.data) || (request.resource.data.workAddress is string && request.resource.data.workAddress.size() <= 250))
+        && 'consentAt' in request.resource.data      // privacy consent must be recorded
+        && stampOk('lastBookingAt') && stampOk('consentAt');
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- catalogue ----------
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create, update: if isFullAdmin()
+        && request.resource.data.keys().hasOnly(['name','description','rate','active','createdAt','updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 80
+        && (!('description' in request.resource.data) || (request.resource.data.description is string && request.resource.data.description.size() <= 180))
+        && request.resource.data.rate is number && request.resource.data.rate >= 0
+        && request.resource.data.active is bool;
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- coupons (doc ID = CODE, upper-case). Customers may check one code they know, but cannot list them. ----------
+    match /coupons/{code} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create, update: if isFullAdmin()
+        && request.resource.data.keys().hasOnly(['code','percent','active','createdAt','updatedAt'])
+        && request.resource.data.code == code
+        && code.matches('^[A-Z0-9]{3,20}$')
+        && request.resource.data.percent is int && request.resource.data.percent >= 1 && request.resource.data.percent <= 90
+        && request.resource.data.active is bool;
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- service area (settings/area: { pins: ['522503', ...] }; empty = serve everywhere) ----------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isFullAdmin() && docId == 'area'
+        && request.resource.data.keys().hasOnly(['pins','updatedAt'])
+        && request.resource.data.pins is list && request.resource.data.pins.size() <= 200;
+    }
+
+    // ---------- bookings ----------
+    match /bookings/{bookingId} {
+      allow create: if googleCustomer()
+        && request.resource.data.keys().hasOnly(['service','name','phone','city','preferredDate','timeSlot','address','pincode','couponCode','photos','customerUid','customerEmail','status','createdAt'])
+        && request.resource.data['service'] is string && request.resource.data['service'].size() > 0 && request.resource.data['service'].size() <= 80
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 70
+        && validIndianPhone(request.resource.data.phone)
+        && request.resource.data.city is string && request.resource.data.city.size() <= 60
+        && request.resource.data.preferredDate is string && request.resource.data.preferredDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.timeSlot in ['Morning','Afternoon','Evening']
+        && request.resource.data.address is string && request.resource.data.address.size() <= 250
+        && request.resource.data.pincode is string && request.resource.data.pincode.matches('^[0-9]{6}$')
+        && (!('couponCode' in request.resource.data)
+            || (request.resource.data.couponCode is string
+                && exists(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode))
+                && get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.active == true))
+        && (!('photos' in request.resource.data) || (request.resource.data.photos is list && request.resource.data.photos.size() <= 3))
+        && request.resource.data.customerUid == request.auth.uid
+        && request.resource.data.customerEmail == request.auth.token.email
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        // basic anti-spam: at least 30 seconds between bookings per customer
+        && request.time > get(/databases/$(database)/documents/customers/$(request.auth.uid)).data.get('lastBookingAt', timestamp.date(2000, 1, 1)) + duration.value(30, 's');
+
+      allow read: if isAdmin()
+        || (googleCustomer() && resource.data.customerUid == request.auth.uid)
+        || (isWorker() && resource.data.get('assignee', '') == request.auth.token.email.lower());
+
+      allow update: if
+        // full admins: status, technician assignment, final amount
+        (isFullAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt','assignee','assigneeName','amount'])
+          && request.resource.data.status in ['pending','confirmed','on_the_way','completed','cancelled']
+          && (!('amount' in request.resource.data) || (request.resource.data.amount is number && request.resource.data.amount >= 0 && request.resource.data.amount <= 1000000)))
+        // customers: cancel their own pending/confirmed request
+        || (googleCustomer() && resource.data.customerUid == request.auth.uid
+          && resource.data.status in ['pending','confirmed']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+          && request.resource.data.status == 'cancelled')
+        // customers: reschedule their own pending/confirmed request
+        || (googleCustomer() && resource.data.customerUid == request.auth.uid
+          && resource.data.status in ['pending','confirmed']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['preferredDate','timeSlot','updatedAt'])
+          && request.resource.data.preferredDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && request.resource.data.timeSlot in ['Morning','Afternoon','Evening'])
+        // assigned technicians: progress the job
+        || (isWorker() && resource.data.get('assignee', '') == request.auth.token.email.lower()
+          && resource.data.status in ['pending','confirmed','on_the_way']
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+          && request.resource.data.status in ['confirmed','on_the_way','completed']);
+
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- privacy: customer asks for erasure (a Cloud Function performs the cascade delete) ----------
+    match /deletionRequests/{uid} {
+      allow create: if googleCustomer() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid','email','name','createdAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string && request.resource.data.name.size() <= 70
+        && request.resource.data.createdAt == request.time;
+      allow read: if isAdmin();
+      allow delete: if isFullAdmin();
+      allow update: if false;
+    }
+
+    // ---------- private staff notes on customers ----------
+    match /customerNotes/{uid} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['note','updatedAt','updatedBy'])
+        && request.resource.data.note is string && request.resource.data.note.size() <= 1000
+        && request.resource.data.updatedBy == request.auth.token.email;
+      allow delete: if isFullAdmin();
+    }
+
+    // ---------- append-only audit log of staff actions ----------
+    match /auditLogs/{id} {
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly(['actorUid','actorEmail','action','target','detail','createdAt'])
+        && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.actorEmail == request.auth.token.email
+        && request.resource.data.action is string && request.resource.data.action.size() <= 60
+        && request.resource.data.target is string && request.resource.data.target.size() <= 120
+        && request.resource.data.detail is string && request.resource.data.detail.size() <= 300
+        && request.resource.data.createdAt == request.time;
+      allow read: if isFullAdmin();
+      allow update, delete: if false;
+    }
+
+    // ---------- client error reports (signed-in users only, size-limited) ----------
+    match /errorLogs/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['message','source','page','ua','uid','createdAt'])
+        && request.resource.data.message is string && request.resource.data.message.size() <= 300
+        && request.resource.data.source is string && request.resource.data.source.size() <= 200
+        && request.resource.data.page is string && request.resource.data.page.size() <= 120
+        && request.resource.data.ua is string && request.resource.data.ua.size() <= 200
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow read, delete: if isFullAdmin();
+      allow update: if false;
+    }
+
+    // ---------- reviews (doc ID = booking ID => one review per booking) ----------
+    match /reviews/{bookingId} {
+      allow read: if true;
+      allow create: if googleCustomer()
+        && request.resource.data.keys().hasOnly(['bookingId','service','rating','comment','authorName','customerUid','createdAt'])
+        && request.resource.data.bookingId == bookingId
+        && request.resource.data.customerUid == request.auth.uid
+        && request.resource.data.rating is int && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+        && request.resource.data.comment is string && request.resource.data.comment.size() <= 300
+        && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 40
+        && request.resource.data.createdAt == request.time
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.customerUid == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data.status == 'completed'
+        && get(/databases/$(database)/documents/bookings/$(bookingId)).data['service'] == request.resource.data['service'];
+      allow update, delete: if isFullAdmin();
+    }
+
+    // ---------- support chat (one conversation per customer; doc ID = Google UID) ----------
+    match /conversations/{conversationId} {
+      allow create: if googleCustomer()
+        && conversationId == request.auth.uid
+        && request.resource.data.customerUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['customerUid','customerName','customerEmail','createdAt','lastMessage','lastMessageAt','status'])
+        && request.resource.data.customerName is string && request.resource.data.customerName.size() <= 70
+        && request.resource.data.customerEmail == request.auth.token.email
+        && request.resource.data.lastMessage is string && request.resource.data.lastMessage.size() <= 1000
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.lastMessageAt == request.time;
+      allow read: if isAdmin() || (googleCustomer() && resource.data.customerUid == request.auth.uid);
+      allow update: if isAdmin() || (googleCustomer() && resource.data.customerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage','lastMessageAt','status','customerName','customerEmail'])
+        && request.resource.data.lastMessage is string && request.resource.data.lastMessage.size() <= 1000
+        && request.resource.data.lastMessageAt == request.time
+        && request.resource.data.status == 'open'
+        && (!('customerEmail' in request.resource.data) || request.resource.data.customerEmail == request.auth.token.email));
+      allow delete: if isFullAdmin();
+      match /messages/{messageId} {
+        allow read: if isAdmin() || (googleCustomer() && ownsConversation(conversationId));
+        allow create: if googleCustomer() && ownsConversation(conversationId)
+          && validMessage() && request.resource.data.senderRole == 'customer';
+        allow create: if isAdmin() && validMessage() && request.resource.data.senderRole == 'admin';
+        allow update, delete: if isFullAdmin();
+      }
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
